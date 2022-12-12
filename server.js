@@ -1,11 +1,10 @@
 import express from "express";
-import flash from "express-flash";
-import session from "express-session";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import {
   getAuth,
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 
@@ -45,14 +44,27 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   createUserWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then((userCredential) => {
-      // Signed in
       const user = userCredential.user;
     })
     .catch((error) => {
       console.log(error.code);
       console.log(error.message);
+      res.redirect("/register");
     });
-    return res.status(201).send;
+  res.redirect("/login");
+});
+
+app.post("/login", (req, res) => {
+  signInWithEmailAndPassword(auth, req.body.email, req.body.password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+    })
+    .catch((error) => {
+      console.log(error.code);
+      console.log(error.message);
+      res.redirect("/login");
+    });
+  res.redirect("/");
 });
 
 app.listen(3000);
