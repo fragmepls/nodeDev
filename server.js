@@ -1,65 +1,58 @@
-if (process.env.NODE_ENV != "production") {
-    require("dotenv").config()
-}
+import express from "express";
+import flash from "express-flash";
+import session from "express-session";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
+import { initializeApp } from "firebase/app";
 
-const express = require("express")
-const app = express()
-const bcrypt = require("bcrypt")
-const passport = require("passport")
-const flash = require("express-flash")
-const session = require("express-session")
+const firebaseConfig = {
+  apiKey: "AIzaSyAYu4LBl-MJsydo6mHEl1qnffTtteckkwM",
+  authDomain: "school-fff9a.firebaseapp.com",
+  projectId: "school-fff9a",
+  storageBucket: "school-fff9a.appspot.com",
+  messagingSenderId: "625820194936",
+  appId: "1:625820194936:web:a9809af85889e01250f58d",
+  measurementId: "G-XHBF8HKRP5",
+};
 
-const init = require("./passport-config")
-init(
-    passport,
-    email => users.find(user => users.email === email)
-)
+const app = express();
+const firebase = initializeApp(firebaseConfig);
+const auth = getAuth();
 
-const users = []
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-app.set("view-engine", "ejs")
-app.use(express.urlencoded( {extended: false} ))
-app.use(flash())
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-}))
-app.use(passport.initialize())
-app.use(passport.session())
+app.set("views", path.join(__dirname, "views"));
+app.set("view-engine", "ejs");
+app.use(express.urlencoded({ extended: false }));
 
 app.get("/", (req, res) => {
-    res.render("index.ejs")
-})
+  res.render("index.ejs");
+});
 
 app.get("/login", (req, res) => {
-    res.render("login.ejs")
-})
+  res.render("login.ejs");
+});
 
 app.get("/register", (req, res) => {
-    res.render("register.ejs")
-})
+  res.render("register.ejs");
+});
 
-app.post("/login", passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-    failureFlash: true
-}))
+app.post("/register", (req, res) => {
+  createUserWithEmailAndPassword(auth, req.body.email, req.body.password)
+    .then((userCredential) => {
+      // Signed in
+      const user = userCredential.user;
+    })
+    .catch((error) => {
+      console.log(error.code);
+      console.log(error.message);
+    });
+    return res.status(201).send;
+});
 
-app.post("/register", async (req, res) => {
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10)
-        users.push({
-            id: Date.now.toString,
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword
-        })
-        res.redirect("/login")
-    } catch {
-        res.redirect("/register")
-    }
-    console.log(users)
-})
-
-app.listen(3000)
+app.listen(3000);
