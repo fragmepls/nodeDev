@@ -1,5 +1,6 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="https://firebasestorage.googleapis.com/v0/b/school-fff9a.appspot.com/o/favicon.ico.ico?alt=media&token=3ef25aa8-5801-4677-85eb-c5c8aed3bde2">
   <style>
     body {
       padding: 50px;
@@ -36,12 +37,18 @@
   </style>
   <title>Simple Cloud</title>
 </head>
-<body>
+<body style="background-color: #ACFFFC;">
   <div class="topnav">
     <a class="active" href="#home">Home</a>
     <a href="#news">News</a>
     <a href="#contact">Contact</a>
     <a href="#about">About</a>
+    <a href=""></a>
+    <p id="currentuser" name="currentuser" style="float: right; color: white; padding-right: 5px;">
+      <% if (user != null) { %> 
+        <%= "You're logged in as " + user + "." %> 
+      <% } %>
+    </p>
   </div>
   <h1>Simple Cloud</h1>
   <input type="file" id="inp" />
@@ -54,6 +61,12 @@
       uploadBytesResumable,
       getDownloadURL,
     } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+    } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAYu4LBl-MJsydo6mHEl1qnffTtteckkwM",
@@ -67,11 +80,11 @@
 
     const app = initializeApp(firebaseConfig);
     const storage = getStorage();
+    const auth = getAuth();
 
     // Create the file metadata
     /** @type {any} */
-    const metadata = {
-    };
+    const metadata = {};
 
     document.getElementById("btn").addEventListener("click", uploadFile, false);
 

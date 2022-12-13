@@ -5,6 +5,7 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 
@@ -30,19 +31,19 @@ app.set("public", path.join(__dirname, "public"));
 app.set("view-engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
 
-app.get("/", (req, res) => {
-  res.render("index.ejs");
+app.get("/", checkAuthenticated, (req, res) => {
+  res.render("index.ejs", { user: auth.currentUser.email });
 });
 
-app.get("/login", (req, res) => {
+app.get("/login", checkNotAuthenticated, (req, res) => {
   res.render("login.ejs");
 });
 
-app.get("/register", (req, res) => {
+app.get("/register", checkNotAuthenticated, (req, res) => {
   res.render("register.ejs");
 });
 
-app.post("/register", (req, res) => {
+app.post("/register", checkNotAuthenticated, (req, res) => {
   createUserWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then((userCredential) => {
       const user = userCredential.user;
@@ -55,7 +56,7 @@ app.post("/register", (req, res) => {
   res.redirect("/login");
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", checkNotAuthenticated, (req, res) => {
   signInWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then((userCredential) => {
       const user = userCredential.user;
@@ -67,5 +68,25 @@ app.post("/login", (req, res) => {
     });
   res.redirect("/");
 });
+
+function checkAuthenticated(req, res, next) {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      next();
+    } else {
+      res.redirect("/login");
+    }
+  });
+}
+
+function checkNotAuthenticated(req, res, next) {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      res.redirect("/");
+    } else {
+      next();
+    }
+  });
+}
 
 app.listen(3000);
