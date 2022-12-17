@@ -12,7 +12,7 @@ a {
   overflow: hidden;
 }
 
-.topnav a {
+.topnav .active {
   float: left;
   color: #f2f2f2;
   text-align: center;
@@ -26,7 +26,7 @@ a {
   color: black;
 }
 
-.topnav a.active {
+.topnav .active {
   background-color: #04aa6d;
   color: white;
 }

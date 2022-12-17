@@ -43,6 +43,14 @@ app.get("/register", checkNotAuthenticated, (req, res) => {
   res.render("register.ejs");
 });
 
+app.get("/logout", (req, res) => {
+  auth.signOut().then(() => {
+    res.render("login.ejs");
+  }).catch((error) => {
+    console.log("error");
+  });
+});
+
 app.post("/register", checkNotAuthenticated, (req, res) => {
   createUserWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then((userCredential) => {
