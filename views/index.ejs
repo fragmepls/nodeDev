@@ -23,9 +23,9 @@
     </p>
   </div>
   <h1>Simple Cloud</h1>
-  <input type="file" id="inp" />
-  <button id="btn">Upload File</button>
-  <button id="list">List files</button>
+  <button id="btn" style="float: right">Upload File</button>
+  <input type="file" id="inp" style="float: right" />
+  <div id="div"></div>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
     import {
@@ -55,13 +55,12 @@
     const app = initializeApp(firebaseConfig);
     const storage = getStorage();
     const auth = getAuth();
-    const listRef = ref(storage, "files/");
 
     // Create the file metadata
     const metadata = {};
 
     document.getElementById("btn").addEventListener("click", uploadFile, false);
-    document.getElementById("list").addEventListener("click", listFiles, false);
+    window.addEventListener("load", listFiles, false);
 
     function uploadFile() {
       const file = document.querySelector("#inp").files[0];
@@ -95,35 +94,43 @@
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             console.log("File available at", downloadURL);
+            location.reload();
           });
         }
       );
     }
 
-    const file = async () => {
-      listAll(listRef)
-        .then((res) => {
-          res.prefixes.forEach((folderRef) => {});
-          res.items.forEach((itemRef) => {
-          });
-        })
-        .catch((error) => {});
+    async function listFiles() {
+      const urls = await getURLs();
+      const names = await getNames();
+      for (let i = 0; i < urls.length && i < names.length; i++) {
+        const a = document.createElement("a");
+        const br = document.createElement("br");
+        a.innerHTML = names[i];
+        a.setAttribute("href", urls[i]);
+        document.getElementById("div").appendChild(a);
+        document.getElementById("div").appendChild(br);
+      }
     }
 
-    function listFiles() {
-      listAll(listRef)
-        .then((res) => {
-          res.prefixes.forEach((folderRef) => {});
-          res.items.forEach((itemRef) => {
-            var a = document.createElement("a");
-            a.setAttribute(
-              "href",
-              res.items.map((itemRef) => getDownloadURL(itemRef))
-            );
-            console.log(res.items.map((itemRef) => getDownloadURL(itemRef).then))
-          });
-        })
-        .catch((error) => {});
+    async function getURLs() {
+      const res = await listAll(ref(storage, "files/"));
+      const urlArray = [];
+      for (const itemRef of res.items) {
+        const downloadURL = await getDownloadURL(itemRef);
+        urlArray.push(downloadURL);
+      }
+      return urlArray;
+    }
+
+    async function getNames() {
+      const res = await listAll(ref(storage, "files/"));
+      const nameArray = [];
+      for (const itemRef of res.items) {
+        const name = itemRef.name;
+        nameArray.push(name);
+      }
+      return nameArray;
     }
   </script>
 </body>
